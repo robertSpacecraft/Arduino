@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="es" dir="ltr">
+    <head>
+        <meta charset="utf-8">
+        <title>IoT Technology Systems</title>
+    </head>
+    <body>
+        <h1>IoT Technology Systems</h1>
+        <div id="status">Desconectado </div><br>
+        <div id="display"> </div>
+
+        <select id = "dispositivos" onchange="getOption()">
+            <option diseabled ="seleccion">Seleccione dispositivo</option>
+            <option>ESP_32</option>
+            <option>ESP_8266</option>
+        </select><br><br>
+        <button onclick="change(1)" type="button">Encender</button> <br><br>
+        <button onclick="change(0)" type="button">Apagar</button> <br>
+        
+
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.js"></script>
+
+        <script type="text/javascript">
+            var clientId = 'client_id_' + Math.floor((Math.random() * 1000000) + 1);
+            client = new Paho.MQTT.Client("", 0, clientId);
+
+            client.onConnectionLost = onConnectionLost;
+            client.onMessageArrived = onMessageArrived;
+
+
+            function getOption(){
+                var selected = document.getElementById("dispositivos").value;
+                if (selected == "ESP_32"){
+                    client = new Paho.MQTT.Client("farmer.cloudmqtt.com", 38944, clientId);
+                    selected = {
+                        useSSL: true,
+                        userName:"rxtshwoe",
+                        password: "ECKuR1mRK6Ru",
+                        onSuccess:onConnect,
+                        onFailure:doFail
+                        }
+                }else if (selected == "ESP_8266"){
+                    client = new Paho.MQTT.Client("farmer.cloudmqtt.com", 38659, clientId);
+                    selected = {
+                        useSSL: true,
+                        userName:"hohyzidj",
+                        password: "tF4d1etFplxm",
+                        onSuccess:onConnect,
+                        onFailure:doFail
+                        }
+                    }
+                    client.connect(selected);
+                     console.log(selected);
+                    console.log(clientId);
+                }
+
+            function onConnect(){
+                console.log("Conexión Exitosa!");
+                $("#status").html("Conexión Establecida");
+                client.subscribe("salidaESPtoMQTT");
+            }
+
+            function onMessageArrived(message){
+                console.log("¡Mensaje recibido! "+ message.payloadString);
+                $("#display").html(message.payloadString);
+               // src = "https://iottechnologysystems.com/index.php";
+               $.ajax({
+                    url: "https://iottechnologysystems.com/index.php",
+        
+                    });
+            }
+
+            function doFail(e){
+                console.log(e);
+            }
+
+            function onConnectionLost(){
+                if (responseObject.errorCode != 0)
+                    console.log("Conexión perdida"+ responseObject.errorMessage);
+            }
+
+            function change(value){
+                console.log(value);
+                message = new Paho.MQTT.Message(value + "");
+                message.destinationName = "entradaMQTTtoESP";
+                client.send(message);
+            }  
+
+        </script>
+    </body>
+</html>
+
